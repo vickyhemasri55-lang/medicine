@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MEDICINE BOT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f4f7f8;
+      --grid: #dbe4e8;
+      --ink: #14213d;
+      --ink-soft: #4a5670;
+      --crimson: #b3202a;
+      --crimson-dark: #8e1820;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    header {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 20px clamp(20px, 6vw, 72px);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    header h1 {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-weight: 400;
+      font-size: 2.4rem;
+      letter-spacing: 0.02em;
+    }
+    header h1 b { color: #ff6b73; font-weight: 400; }
+    header p { font-size: 0.9rem; opacity: 0.75; }
+
+    .topics {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 14px clamp(20px, 6vw, 72px);
+      background: var(--white);
+      border-bottom: 1px solid var(--grid);
+    }
+    .topic {
+      font: inherit;
+      font-size: 0.9rem;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid var(--ink);
+      border-radius: 6px;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .topic:hover { background: var(--crimson); border-color: var(--crimson); color: var(--white); }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px clamp(20px, 6vw, 72px) 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      scroll-behavior: smooth;
+    }
+
+    .msg { max-width: 720px; line-height: 1.65; font-size: 1rem; }
+
+    .msg.bot {
+      align-self: flex-start;
+      background: var(--white);
+      border: 1px solid var(--ink);
+      border-left: 4px double var(--crimson);
+      border-radius: 2px 12px 12px 12px;
+      padding: 16px 22px 16px 24px;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+    .msg.user {
+      align-self: flex-end;
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: 12px 12px 2px 12px;
+      padding: 12px 18px;
+    }
+    .msg.error { border-color: var(--crimson); color: var(--crimson-dark); box-shadow: 4px 4px 0 var(--crimson); }
+
+    .msg p + p, .msg p + ul, .msg p + ol, .msg ul + p, .msg ol + p,
+    .msg h3 + p, .msg h3 + ul, .msg h3 + ol, .msg p + h3, .msg ul + h3, .msg ol + h3 { margin-top: 10px; }
+    .msg h3 {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-weight: 400;
+      font-size: 1.35rem;
+      color: var(--crimson-dark);
+    }
+    .msg ul, .msg ol { padding-left: 22px; }
+    .msg li + li { margin-top: 4px; }
+    .msg strong { font-weight: 600; }
+
+    .pulse { display: inline-flex; align-items: center; gap: 4px; height: 20px; }
+    .pulse i {
+      width: 4px;
+      height: 14px;
+      background: var(--crimson);
+      border-radius: 2px;
+      animation: beat 1s infinite ease-in-out;
+    }
+    .pulse i:nth-child(2) { animation-delay: 0.12s; }
+    .pulse i:nth-child(3) { animation-delay: 0.24s; }
+    .pulse i:nth-child(4) { animation-delay: 0.36s; }
+    @keyframes beat {
+      0%, 100% { transform: scaleY(0.4); }
+      40% { transform: scaleY(1.5); }
+    }
+
+    .composer {
+      display: flex;
+      gap: 12px;
+      padding: 16px clamp(20px, 6vw, 72px) 8px;
+    }
+    .composer input {
+      flex: 1;
+      font: inherit;
+      padding: 14px 18px;
+      border: 2px solid var(--ink);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--ink);
+    }
+    .composer input:focus { outline: none; border-color: var(--crimson); }
+    .composer button {
+      font: inherit;
+      font-weight: 600;
+      padding: 0 28px;
+      border: 2px solid var(--crimson);
+      border-radius: 8px;
+      background: var(--crimson);
+      color: var(--white);
+      cursor: pointer;
+    }
+    .composer button:hover { background: var(--crimson-dark); border-color: var(--crimson-dark); }
+    .composer button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button:focus-visible, input:focus-visible { outline: 3px solid var(--crimson); outline-offset: 2px; }
+
+    .note {
+      padding: 0 clamp(20px, 6vw, 72px) 16px;
+      font-size: 0.8rem;
+      color: var(--ink-soft);
+    }
+
+    @media (max-width: 640px) {
+      header h1 { font-size: 1.9rem; }
+      header p { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pulse i { animation: none; }
+      .messages { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MEDICINE <b>BOT</b></h1>
+    <p>A study companion for medical students</p>
+  </header>
+
+  <nav class="topics" aria-label="Quick topics">
+    <button class="topic">Explain the cardiac cycle</button>
+    <button class="topic">Beta blockers: mechanism and side effects</button>
+    <button class="topic">Compare type 1 and type 2 diabetes</button>
+    <button class="topic">Quiz me on the cranial nerves</button>
+  </nav>
+
+  <main class="messages" id="messages" aria-live="polite"></main>
+
+  <div class="composer">
+    <input id="input" type="text" placeholder="Ask a medical study question" autocomplete="off" aria-label="Your message">
+    <button id="send">Send</button>
+  </div>
+  <p class="note">For study use only. This is not medical advice. Consult a doctor for personal health concerns.</p>
+
+  <script>
+    const messagesEl = document.getElementById("messages");
+    const inputEl = document.getElementById("input");
+    const sendBtn = document.getElementById("send");
+    const history = [];
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function renderMarkdown(text) {
+      const lines = escapeHtml(text).split("\n");
+      let html = "";
+      let list = null;
+
+      const closeList = () => {
+        if (list) { html += `</${list}>`; list = null; }
+      };
+      const inline = (s) => s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+      for (const raw of lines) {
+        const line = raw.trim();
+        const heading = line.match(/^#{1,4}\s+(.*)/);
+        const bullet = line.match(/^[-*]\s+(.*)/);
+        const numbered = line.match(/^\d+[.)]\s+(.*)/);
+
+        if (bullet || numbered) {
+          const type = bullet ? "ul" : "ol";
+          if (list !== type) { closeList(); html += `<${type}>`; list = type; }
+          html += `<li>${inline((bullet || numbered)[1])}</li>`;
+        } else if (heading) {
+          closeList();
+          html += `<h3>${inline(heading[1])}</h3>`;
+        } else if (line) {
+          closeList();
+          html += `<p>${inline(line)}</p>`;
+        }
+      }
+      closeList();
+      return html;
+    }
+
+    function addMessage(role, content, isError = false) {
+      const el = document.createElement("div");
+      el.className = `msg ${role}${isError ? " error" : ""}`;
+      if (role === "bot") el.innerHTML = renderMarkdown(content);
+      else el.textContent = content;
+      messagesEl.appendChild(el);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return el;
+    }
+
+    function setLoading(loading) {
+      sendBtn.disabled = loading;
+      inputEl.disabled = loading;
+      if (!loading) inputEl.focus();
+    }
+
+    async function sendMessage(text) {
+      text = text.trim();
+      if (!text) return;
+
+      addMessage("user", text);
+      history.push({ role: "user", text });
+      inputEl.value = "";
+      setLoading(true);
+
+      const typing = addMessage("bot", "");
+      typing.innerHTML = '<span class="pulse"><i></i><i></i><i></i><i></i></span>';
+
+      try {
+        const response = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: history }),
+        });
+        const data = await response.json();
+        typing.remove();
+
+        if (!response.ok) throw new Error(data.error || "Something went wrong.");
+
+        addMessage("bot", data.reply);
+        history.push({ role: "bot", text: data.reply });
+      } catch (error) {
+        typing.remove();
+        history.pop();
+        addMessage("bot", error.message, true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    sendBtn.addEventListener("click", () => sendMessage(inputEl.value));
+    inputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendMessage(inputEl.value);
+    });
+    document.querySelectorAll(".topic").forEach((topic) =>
+      topic.addEventListener("click", () => sendMessage(topic.textContent))
+    );
+
+    addMessage("bot", "Hello, I'm MEDICINE BOT. Ask me about anatomy, physiology, pathology, pharmacology, or any other medical subject you are studying.");
+  </script>
+</body>
+</html>
